@@ -1,63 +1,74 @@
-const { zokou } = require('../framework/zokou');
-const lyricsFinder = require('lyrics-finder');
-const yts = require('yt-search');
 
+const { zokou } = require("../framework/zokou");
+const axios = require("axios");
+
+// Define the command with aliases
 zokou({
-    nomCom: 'lyrics',
-    aliases: ['lyric', 'fave mr man'],
-    reaction: '📑',
-}, async (zk, dest, context) => {
-    const { repondre, arg, ms } = context;
+  nomCom: "lyrics",
+  aliases: ["lyric", "mistari"],
+  reaction: '🤦',
+  categorie: "Music"
+}, async (dest, zk, params) => {
+  const { repondre: sendResponse, arg: commandArgs, ms } = params;
+  const text = commandArgs.join(" ").trim();
 
+  if (!text) {
+    return sendResponse("Please provide a song name.");
+  }
+
+  // Function to get lyrics data from APIs
+  const getLyricsData = async (url) => {
     try {
-        // Check if the argument (song and artist) is provided
-        if (!arg || arg.length === 0) {
-            return repondre('Please provide a song name and artist.');
-        }
-
-        // Create a search query from the arguments
-        const searchQuery = arg.join(' ');
-
-        // Search for the song using yt-search
-        const info = await yts(searchQuery);
-        const results = info.videos;
-
-        // Check if no results were found
-        if (!results || results.length === 0) {
-            return repondre('No results found for the given song or artist.');
-        }
-
-        // Extract title and artist from the search query
-        const songDetails = searchQuery.split(' ').reverse();
-        const title = songDetails.slice(0, songDetails.length - 1).join(' ');
-        const artist = songDetails[songDetails.length - 1];
-
-        // Fetch the lyrics using lyrics-finder
-        const lyrics = await lyricsFinder(artist, title);
-
-        // Check if lyrics are found
-        if (!lyrics) {
-            return repondre(`Sorry, I couldn't find any lyrics for "${searchQuery}". Please try another song.`);
-        }
-
-        // Format the message to send to the user
-        const formattedMessage = `
-*POPKID MD PLANET LYRICS FINDER*
-*Title:* ${title}
-*Artist:* ${artist}
-
-${lyrics}
-        `;
-
-        // Send the response with the song's thumbnail and lyrics
-        await zk.sendMessage(dest, {
-            image: { url: results[0].thumbnail },
-            caption: formattedMessage,
-        }, { quoted: ms });
-
+      const response = await axios.get(url);
+      return response.data;
     } catch (error) {
-        // Handle any errors that occur
-        repondre(`Error: I was unable to fetch the lyrics. Please try again later.\n\n${error.message}`);
-        console.log(error);
+      console.error('Error fetching data from API:', error);
+      return null;
     }
+  };
+
+  // List of APIs to try
+  const apis = [
+    `https://api.dreaded.site/api/lyrics?title=${encodeURIComponent(text)}`,
+    `https://some-random-api.com/others/lyrics?title=${encodeURIComponent(text)}`,
+    `https://api.davidcyriltech.my.id/lyrics?title=${encodeURIComponent(text)}`
+  ];
+
+  let lyricsData;
+  for (const api of apis) {
+    lyricsData = await getLyricsData(api);
+    if (lyricsData && lyricsData.result && lyricsData.result.lyrics) break;
+  }
+
+  // Check if lyrics data was found
+  if (!lyricsData || !lyricsData.result || !lyricsData.result.lyrics) {
+    return sendResponse(`Failed to retrieve lyrics. Please try again.`);
+  }
+
+  const { title, artist, thumb, lyrics } = lyricsData.result;
+  const imageUrl = thumb || "https://files.catbox.moe/b2vql7.jpg";
+
+  const caption = `**Title**: ${title}\n**Artist**: ${artist}\n\n${lyrics}`;
+
+  try {
+    // Fetch the image
+    const imageResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+    const imageBuffer = Buffer.from(imageResponse.data, 'binary');
+
+    // Send the message with the image and lyrics
+    await zk.sendMessage(
+      dest,
+      {
+        image: imageBuffer,
+        caption: caption
+      },
+      { quoted: ms }
+    );
+
+  } catch (error) {
+    console.error('Error fetching or sending image:', error);
+    // Fallback to sending just the text if image fetch fails
+    await sendResponse(caption);
+  }
 });
+ 

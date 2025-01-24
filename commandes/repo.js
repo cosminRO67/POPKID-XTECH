@@ -8,7 +8,7 @@ const s = require(__dirname + "/../set");
 const more = String.fromCharCode(8206)
 const readmore = more.repeat(4001)
 
-zokou({ nomCom: "repo", categorie: "General" }, async (dest, zk, commandeOptions) => {
+zokou({ nomCom: "repo", categorie: "My Contact" }, async (dest, zk, commandeOptions) => {
     let { ms, repondre ,prefixe,nomAuteurMessage,mybotpic} = commandeOptions;
     let { cm } = require(__dirname + "/../framework//zokou");
     var coms = {};
@@ -34,31 +34,47 @@ const temps = moment().format('HH:mm:ss');
 const date = moment().format('DD/MM/YYYY');
 
   let infoMsg =  `
-      *𝐏𝐎𝐏𝐊𝐈𝐃 𝐈𝐍𝐅𝐎* 
-❒───────────────────❒
-*GITHUB LINK*
-> https://github.com/Popkiddevs/POPKID-XTECH
+❂━━━════──⊷──════━━━❂
+   *INFORMATION ABOUT ME* 
+▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒
+❂━━━➳════⊷════➳━━━━❂
 
-*𝐏𝐎𝐏𝐊𝐈𝐃𝐒 𝐂𝐇𝐀𝐍𝐍𝐄𝐋*
+*GITHUB LINK*
+>  https://github.com/Popkiddevs/POPKID-XTECH
+
+*YouTube channel*
+https://youtube.com/@Popkid_254
+
+*FOR DEVELOPER T.ME*
+> https://wa.me/+254111385747
+*WHATSAPP CHANNEL*
 > https://whatsapp.com/channel/0029VadQrNI8KMqo79BiHr3l
-⁠
-╭───────────────────❒
-│😂 *RAM* : ${format(os.totalmem() - os.freemem())}/${format(os.totalmem())}
-│❣️ *DEV1* : *ᴘᴏᴘᴋɪᴅ*
-│⚽ *DEV2* : *ᴘᴏᴘᴋɪᴅ*
-⁠⁠⁠⁠╰───────────────────❒
+
+*FOR MORE INFO TAP ON THE LINK BELOW*
+> https://github.com/Popkiddevs/POPKID-XTECH
+╭──━━━━═════════━━━━⦿
+┃ ❂━━━════➳════━━━━❂
+┃▓▒⁠⁠⁠⁠ *RAM* : ${format(os.totalmem() - os.freemem())}/${format(os.totalmem())}
+┃▓▒ *DEV* : *POPKID BOT*
+┃ ❂━━━════➳════━━━━❂
+⁠⁠⁠⁠╰──━━━━═════════━━━━⦿ 
   `;
     
 let menuMsg = `
-     *ᴘᴏᴘᴋɪᴅ ᴛᴇᴄʜ*
-
-❒────────────────────❒`;
+     ╭──━━━━══⊷══━━━━⦿
+     ┃ ❂━━━━━━━━━━━━❂
+     ┃▓ POPKID MD 💮
+     ┃ ❂━━━━━━━━━━━━❂
+     ╰──━━━━══⊷══━━━━⦿
+❂━━━━═════⊷═════━━━━❂
+▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒▓▒
+❂━━━════──➳──════━━━❂`;
 
    var lien = mybotpic();
 
    if (lien.match(/\.(mp4|gif)$/i)) {
     try {
-        zk.sendMessage(dest, { video: { url: lien }, caption:infoMsg + menuMsg, footer: "Je suis *Anywaymd*, déveloper popkid Tech" , gifPlayback : true }, { quoted: ms });
+        zk.sendMessage(dest, { video: { url: lien }, caption:infoMsg + menuMsg, footer: "I am *popkid Md*, Developed By popkidSir" , gifPlayback : true }, { quoted: ms });
     }
     catch (e) {
         console.log("🥵🥵 Menu erreur " + e);
@@ -68,7 +84,7 @@ let menuMsg = `
 // Vérification pour .jpeg ou .png
 else if (lien.match(/\.(jpeg|png|jpg)$/i)) {
     try {
-        zk.sendMessage(dest, { image: { url: lien }, caption:infoMsg + menuMsg, footer: "Je suis *Anywaymd*, déveloper popkid Tech" }, { quoted: ms });
+        zk.sendMessage(dest, { image: { url: lien }, caption:infoMsg + menuMsg, footer: "I am *popkid*, Developed By popkidSir" }, { quoted: ms });
     }
     catch (e) {
         console.log("🥵🥵 Menu erreur " + e);
@@ -81,4 +97,4 @@ else {
     
 }
 
-}); 
+});
