@@ -5,7 +5,7 @@ function convertToBool(text, fault = 'true') {
     return text === fault ? true : false;
 }
 module.exports = {
-SESSION_ID: process.env.SESSION_ID || "POPKID~QL0FwBoS#K_SYm4UZHHHCNN8r9EeOv8nLBaGr3vKpMB6z9S5W4Mc",
+SESSION_ID: process.env.SESSION_ID || "POPKID;;;jB52nA5Z#hEJbnFbfBNnvSMEzyuv7pAnwXGH2LEDZacYhhYgWWXQ",
 // add your Session Id 
 AUTO_STATUS_SEEN: process.env.AUTO_STATUS_SEEN || "true",
 // make true or false status auto seen
@@ -31,9 +31,9 @@ CUSTOM_REACT_EMOJIS: process.env.CUSTOM_REACT_EMOJIS || "💝,💖,💗,❤️�
 // chose custom react emojis by yourself 
 DELETE_LINKS: process.env.DELETE_LINKS || "false",
 // automatic delete links witho remove member 
-OWNER_NUMBER: process.env.OWNER_NUMBER || "254732297194",
+OWNER_NUMBER: process.env.OWNER_NUMBER || "0784858433",
 // add your bot owner number
-OWNER_NAME: process.env.OWNER_NAME || "Pᴏᴘᴋɪᴅ Xᴛᴇᴄʜ",
+OWNER_NAME: process.env.OWNER_NAME || "cosmin",
 // add bot owner name
 DESCRIPTION: process.env.DESCRIPTION || "*© ᴘᴏᴡᴇʀᴇᴅ ʙʏ Pᴏᴘᴋɪᴅ Xᴛᴇᴄʜ*",
 // add bot owner name    
