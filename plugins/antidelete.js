@@ -1,143 +1,120 @@
-const axios = require('axios');
+const { pop } = require('@whiskeysockets/baileys');
+const { loadMessage, getAnti } = require('../data'); // Assuming these are correctly imported
 const config = require('../config');
-const { cmd, commands } = require('../command');
-const util = require("util");
-const { getAnti, setAnti, initializeAntiDeleteSettings } = require('../data/antidel');
 
-// Initialize AntiDelete settings
-initializeAntiDeleteSettings();
+// Helper to send stylish text deletions
+const DeletedText = async (conn, mek, jid, deleteInfo, isGroup, update) => {
+    const messageContent = mek.message?.conversation || mek.message?.extendedTextMessage?.text || '*(Empty Text Message)*';
 
-cmd({
-    pattern: "antidelete",
-    alias: ['antidel', 'ad'],
-    desc: "Sets up the Antidelete feature.",
-    category: "misc",
-    filename: __filename
-},
-async (conn, mek, m, { from, reply, q, text, isCreator, fromMe }) => {
-    if (!isCreator) return reply('⚠️ This command is only for the bot owner. ⚠️');
+    // Adding more emphasis to the deleted content
+    const stylishContent = `\`\`\`${messageContent}\`\`\``; // Using code block for deleted text
 
-    try {
-        const command = q?.toLowerCase();
+    const fullMessage = `${deleteInfo}\n\n*💬 DELETED CONTENT:*\n${stylishContent}`;
 
-        switch (command) {
-            // Enable AntiDelete globally (both GC and DM)
-            case 'on':
-                await setAnti('gc', false); // Disable in Group Chats
-                await setAnti('dm', false); // Disable in Direct Messages
-                return reply('🔴 _AntiDelete is now OFF for Group Chats and Direct Messages._');
+    await conn.sendMessage(
+        jid,
+        {
+            text: fullMessage,
+            contextInfo: {
+                mentionedJid: isGroup ? [update.key.participant, mek.key.participant] : [update.key.remoteJid],
+            },
+        },
+        { quoted: mek },
+    );
+};
 
-            // Disable AntiDelete for Group Chats
-            case 'off gc':
-                await setAnti('gc', false);
-                return reply('❌ _AntiDelete for Group Chats is now DISABLED._');
+// Helper to handle stylish media deletions
+const DeletedMedia = async (conn, mek, jid, deleteInfo) => {
+    const antideletedmek = structuredClone(mek.message);
+    const messageType = Object.keys(antideletedmek)[0];
 
-            // Disable AntiDelete for Direct Messages
-            case 'off dm':
-                await setAnti('dm', false);
-                return reply('❌ _AntiDelete for Direct Messages is now DISABLED._');
-
-            // Toggle AntiDelete for Group Chats
-            case 'set gc':
-                const gcStatus = await getAnti('gc');
-                await setAnti('gc', !gcStatus); // Toggle state
-                return reply(`🔄 _AntiDelete for Group Chats is now ${!gcStatus ? 'ENABLED' : 'DISABLED'}._`);
-
-            // Toggle AntiDelete for Direct Messages
-            case 'set dm':
-                const dmStatus = await getAnti('dm');
-                await setAnti('dm', !dmStatus); // Toggle state
-                return reply(`🔄 _AntiDelete for Direct Messages is now ${!dmStatus ? 'ENABLED' : 'DISABLED'}._`);
-
-            // Enable AntiDelete for both Group Chats and Direct Messages
-            case 'set all':
-                await setAnti('gc', true);
-                await setAnti('dm', true);
-                return reply('✅ _AntiDelete has been ENABLED for all chats._');
-
-            // Show current AntiDelete status
-            case 'status':
-                const currentDmStatus = await getAnti('dm');
-                const currentGcStatus = await getAnti('gc');
-                return reply(`🔍 _AntiDelete Status:_\n\n*DM AntiDelete:* ${currentDmStatus ? '✅ ENABLED' : '❌ DISABLED'}\n*Group Chat AntiDelete:* ${currentGcStatus ? '✅ ENABLED' : '❌ DISABLED'}`);
-
-            // Show Help Message for all available commands
-            default:
-                const helpMessage = `
-                -- *AntiDelete Command Guide:* --
-                • \`\`.antidelete on\`\` - 🔴 Turn OFF AntiDelete for all chats (disabled by default)
-                • \`\`.antidelete off gc\`\` - ❌ Disable AntiDelete for Group Chats
-                • \`\`.antidelete off dm\`\` - ❌ Disable AntiDelete for Direct Messages
-                • \`\`.antidelete set gc\`\` - 🔄 Toggle AntiDelete for Group Chats
-                • \`\`.antidelete set dm\`\` - 🔄 Toggle AntiDelete for Direct Messages
-                • \`\`.antidelete set all\`\` - ✅ Enable AntiDelete for all chats
-                • \`\`.antidelete status\`\` - 🔍 Check current AntiDelete status`;
-
-                return reply(helpMessage);
-        }
-    } catch (e) {
-        console.error("⚠️ Error in antidelete command:", e);
-        return reply("❌ An error occurred while processing your request.");
+    // Prepare context info for relaying the original message
+    if (antideletedmek[messageType]) {
+        antideletedmek[messageType].contextInfo = {
+            stanzaId: mek.key.id,
+            participant: mek.sender,
+            quotedMessage: mek.message, // This helps link to the original if possible
+        };
     }
-});
 
-cmd({
-    pattern: "vv3",
-    alias: ['retrive', '🔥'],
-    desc: "Fetch and resend a ViewOnce message content (image/video/audio).",
-    category: "misc",
-    use: '<query>',
-    filename: __filename
-},
-async (conn, mek, m, { from, reply }) => {
-    try {
-        const quotedMessage = m.msg.contextInfo.quotedMessage; // Get the quoted message
-
-        // Check if it's a ViewOnce message
-        if (quotedMessage && quotedMessage.viewOnceMessageV2) {
-            const quot = quotedMessage.viewOnceMessageV2;
-
-            if (quot.message.imageMessage) {
-                let caption = quot.message.imageMessage.caption;
-                let media = await conn.downloadAndSaveMediaMessage(quot.message.imageMessage);
-                return conn.sendMessage(from, { image: { url: media }, caption }, { quoted: mek });
-            }
-
-            if (quot.message.videoMessage) {
-                let caption = quot.message.videoMessage.caption;
-                let media = await conn.downloadAndSaveMediaMessage(quot.message.videoMessage);
-                return conn.sendMessage(from, { video: { url: media }, caption }, { quoted: mek });
-            }
-
-            if (quot.message.audioMessage) {
-                let media = await conn.downloadAndSaveMediaMessage(quot.message.audioMessage);
-                return conn.sendMessage(from, { audio: { url: media } }, { quoted: mek });
-            }
-        }
-
-        // If there is no quoted message or it's not a ViewOnce message
-        if (!m.quoted) return reply("⚠️ Please reply to a ViewOnce message.");
-
-        if (m.quoted.mtype === "viewOnceMessage") {
-            if (m.quoted.message.imageMessage) {
-                let caption = m.quoted.message.imageMessage.caption;
-                let media = await conn.downloadAndSaveMediaMessage(m.quoted.message.imageMessage);
-                return conn.sendMessage(from, { image: { url: media }, caption }, { quoted: mek });
-            } else if (m.quoted.message.videoMessage) {
-                let caption = m.quoted.message.videoMessage.caption;
-                let media = await conn.downloadAndSaveMediaMessage(m.quoted.message.videoMessage);
-                return conn.sendMessage(from, { video: { url: media }, caption }, { quoted: mek });
-            } else if (m.quoted.message.audioMessage) {
-                let media = await conn.downloadAndSaveMediaMessage(m.quoted.message.audioMessage);
-                return conn.sendMessage(from, { audio: { url: media } }, { quoted: mek });
-            }
-        } else {
-            return reply("❌ This is not a valid ViewOnce message.");
-        }
-    } catch (e) {
-        console.log("⚠️ Error in vv3:", e);
-        reply("❌ An error occurred while fetching the ViewOnce message.");
+    if (messageType === 'imageMessage' || messageType === 'videoMessage') {
+        // Set caption for image/video directly
+        antideletedmek[messageType].caption = `${deleteInfo}\n\n*🖼️ / 🎥 Media Recovered*`; // Add a clear indicator
+        await conn.relayMessage(jid, antideletedmek, {}); // Relay the media with new caption
+    } else if (messageType === 'audioMessage' || messageType === 'documentMessage') {
+        // For audio/document, send info text first, then relay
+        await conn.sendMessage(jid, { text: `*🚨 DELETED MEDIA DETECTED!* 🚨\n\n${deleteInfo}\n\n*🎵 / 📄 Media Recovered Below*` }, { quoted: mek });
+        await conn.relayMessage(jid, antideletedmek, {}); // Relay the media
+    } else {
+        // Fallback for other media types (e.g., sticker, contact, location)
+        await conn.sendMessage(jid, { text: `*🚨 DELETED MESSAGE DETECTED!* 🚨\n\n${deleteInfo}\n\n*♻️ Message Content Recovered Below*` }, { quoted: mek });
+        await conn.relayMessage(jid, antideletedmek, {}); // Relay the message as-is
     }
-});
+};
 
-// Credit: YourName | GitHub: github.com/YourHandle
+const AntiDelete = async (conn, updates) => {
+    for (const update of updates) {
+        if (update.update.message === null) {
+            const store = await loadMessage(update.key.id);
+
+            if (store && store.message) {
+                const mek = store.message;
+                const isGroup = isJidGroup(store.jid);
+                const antiDeleteType = isGroup ? 'gc' : 'dm';
+                const antiDeleteStatus = await getAnti(antiDeleteType); // Check if anti-delete is enabled for this chat type
+                if (!antiDeleteStatus) continue;
+
+                const deleteTime = new Date().toLocaleTimeString('en-GB', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false // Ensure 24-hour format
+                });
+
+                let deleteInfo, jid;
+                if (isGroup) {
+                    const groupMetadata = await conn.groupMetadata(store.jid);
+                    const groupName = groupMetadata.subject;
+                    const sender = mek.key.participant?.split('@')[0];
+                    const deleter = update.key.participant?.split('@')[0];
+
+                    deleteInfo = `
+*🛡️ ANTI-DELETE ALERT 🛡️*
+
+*⏰ Time:* ${deleteTime}
+*👥 Group:* ${groupName}
+*🗑️ Deleted by:* @${deleter}
+*👤 Original Sender:* @${sender}
+                    `.trim(); // Using trim() to remove leading/trailing whitespace
+                    jid = config.ANTI_DEL_PATH === "log" ? conn.user.id : store.jid;
+                } else {
+                    const senderNumber = mek.key.remoteJid?.split('@')[0]; // For DMs, original sender is remoteJid
+                    const deleterNumber = update.key.remoteJid?.split('@')[0]; // For DMs, deleter is also remoteJid (since it's their deletion)
+
+                    deleteInfo = `
+*🛡️ ANTI-DELETE ALERT 🛡️*
+
+*⏰ Time:* ${deleteTime}
+*🗑️ Deleted by:* @${deleterNumber}
+*👤 Original Sender:* @${senderNumber}
+                    `.trim();
+                    jid = config.ANTI_DEL_PATH === "log" ? conn.user.id : update.key.remoteJid;
+                }
+
+                if (mek.message?.conversation || mek.message?.extendedTextMessage) {
+                    await DeletedText(conn, mek, jid, deleteInfo, isGroup, update);
+                } else {
+                    await DeletedMedia(conn, mek, jid, deleteInfo);
+                }
+            }
+        }
+    }
+};
+
+module.exports = {
+    DeletedText,
+    DeletedMedia,
+    AntiDelete,
+};
+
+// by jawadtechx
