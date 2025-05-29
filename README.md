@@ -33,7 +33,7 @@
 
 ### 🤍 Get Pair Code
 <p align="center">
-  <a href="https://popkidsessiioons.onrender.com">
+  <a href="https://popkidsessgenerator.onrender.com">
     <img src="https://img.shields.io/badge/LOG IN FOR SESSION ID-white?style=for-the-badge&logo=porsche&logoColor=black" width="240" height="38.45" />
   </a>
 </p>
@@ -60,6 +60,23 @@
 </p>
 
 ---
+
+<!-- Create Talkdrove -->
+<h2 align="center">🖤 ᴄʀᴇᴀᴛᴇ ᴛᴀʟᴋᴅʀᴏᴠᴇ ᴀᴄᴄᴏᴜɴᴛ</h2>
+<p align="center">
+  <a href="https://host.talkdrove.com/auth/signup?ref=F3E97634">
+    <img src="https://img.shields.io/badge/CREATE%20ACCOUNT-grey?style=for-the-badge&logo=talkdrove&logoColor=white&labelColor=black" width="220" height="45"/>
+  </a>
+</p>
+
+<!-- Talkdrove Hosting -->
+<h2 align="center">⚡ ᴛᴀʟᴋᴅʀᴏᴠᴇ ʜᴏsᴛɪɴɢ</h2>
+<p align="center">
+  <a href="https://host.talkdrove.com/dashboard/select-bot/prepare-deployment?botId=53" target="_blank">
+    <img src="https://img.shields.io/badge/-TALKDROVE%20HOSTING-orange?style=for-the-badge&logo=talkdrove&logoColor=orange&labelColor=black" width="240" height="45" alt="Talkdrove Hosting" />
+  </a>
+</p>
+
 
 ## 💖 Contact Me
 [![Whatsapp contact](https://img.shields.io/badge/Contact-Dev%20Popkid-25D366?style=for-the-badge&logo=whatsapp)](https://wa.me/+254111385747)
